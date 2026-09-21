@@ -1,5 +1,5 @@
 # Health check
-Project URL: https://github.com/Dishaman8/health-check.git
+Project URL: https://github.com/Dishaman8/health-check
 `server-stats.sh` prints a Linux server performance summary:
 CPU, memory and disk usage, the top five processes by CPU and memory, plus OS, uptime, load average, 
 and logged-in user details.
