@@ -2,7 +2,7 @@
 # lib.sh - library functions for bash scripts
 #Author: Mustafa Ismail | Date: 25-sep-2025
 
-LOG_FILE="/var/log/devops-toolkit.log"
+LOG_FILE="${LOG_FILE:-/var/log/devops-toolkit.log}"
 
 log_info() { echo "[$(date +'%Y-%m-%d %H:%M:%S')] [INFO] $*" >> "$LOG_FILE"; }
 log_warn() { echo "[$(date +'%Y-%m-%d %H:%M:%S')] [WARN] $*" >> "$LOG_FILE"; }

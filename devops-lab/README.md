@@ -10,14 +10,15 @@ standard Linux command-line tools:
 
 - `top` and `free` (usually provided by the `procps` package)
 - `df`, `date`, and `cp` (usually provided by `coreutils`)
-- `grep`, `awk`, and `tar`
+- `grep`, `awk`, `ping`, and `tar`
+- The Tailscale CLI for the Tailscale gateway check
 
 Install any missing tools with your Linux distribution's package manager. For
 example, on Debian or Ubuntu:
 
 ```bash
 sudo apt update
-sudo apt install procps coreutils grep gawk tar
+sudo apt install procps coreutils grep gawk iputils-ping tar
 ```
 
 The scripts append log entries to `/var/log/devops-toolkit.log`. Run them with
@@ -25,17 +26,39 @@ The scripts append log entries to `/var/log/devops-toolkit.log`. Run them with
 
 ## Health check
 
-Run the CPU, memory, and disk checks:
+Run all health checks:
 
 ```bash
 sudo ./health-check.sh
 ```
 
-The script sources `lib.sh`, then runs `check_cpu`, `check_memory`, and
-`check_disk` in that order. It logs CPU warnings above 80%, memory warnings
-above 85%, and disk warnings above 90%. The CPU and memory thresholds are set
-near the top of `health-check.sh`; the disk check currently uses a fixed 90%
-cutoff.
+The script sources `lib.sh`, then runs CPU, memory, disk, Tailscale gateway,
+and internet connectivity checks in that order. It logs CPU warnings above
+80%, memory warnings above 85%, and disk warnings above 90%. The CPU and memory
+thresholds are set near the top of `health-check.sh`; the disk check currently
+uses a fixed 90% cutoff.
+
+The gateway check runs `tailscale ping` against `gateway` by default. Internet
+reachability and stability use three ICMP probes to `1.1.1.1`: at least one
+successful probe logs the internet as reachable, while all three must succeed
+for the connection to be logged as stable. Every result is appended with a
+timestamp through the shared logger. Missing commands and failed probes are
+logged as warnings, and do not stop the remaining checks.
+
+Override the targets and timeouts with environment variables when running the
+script:
+
+```bash
+sudo TAILSCALE_GATEWAY=my-gateway TAILSCALE_TIMEOUT=5s \
+  INTERNET_TARGET=1.1.1.1 INTERNET_PROBE_COUNT=3 INTERNET_TIMEOUT=2 \
+  ./health-check.sh
+```
+
+`TAILSCALE_GATEWAY` defaults to `gateway`; `TAILSCALE_TIMEOUT` defaults to
+`5s`. `INTERNET_TARGET` defaults to `1.1.1.1`, `INTERNET_PROBE_COUNT` to `3`,
+and `INTERNET_TIMEOUT` to `2` seconds. Probe count and timeout must be positive
+integers. ICMP filtering can cause a warning even when other internet services
+are available; set `INTERNET_TARGET` to a reachable IP for your network.
 
 ## Back up a directory
 
